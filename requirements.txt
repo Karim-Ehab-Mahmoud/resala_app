@@ -1,4 +1,5 @@
-flask
-gspread
-google-auth
-google-auth-oauthlib
+Flask==2.0.1
+gspread==5.4.0
+google-auth==2.6.6
+google-auth-oauthlib==0.4.6
+gunicorn==20.1.0
