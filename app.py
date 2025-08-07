@@ -1,7 +1,8 @@
 import os
+import json
 import base64
 from flask import Flask, render_template, request, redirect, url_for, session, flash
-from google.oauth2.credentials import Credentials
+from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 import gspread
 from datetime import datetime
@@ -12,12 +13,24 @@ app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'default-key')
 # Hardcoded users (replace with database or hashed passwords later)
 USERS = {'karim': '2425', 'admin': 'admin123'}
 
-# Decode creds.json from GOOGLE_CREDENTIALS environment variable
+# Google API scopes
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds_json = base64.b64decode(os.getenv("GOOGLE_CREDENTIALS")).decode("utf-8")
-with open("creds.json", "w") as f:
-    f.write(creds_json)
-creds = Credentials.from_service_account_file("creds.json", scopes=scope)
+
+# Load Google credentials (works both locally and on Railway)
+google_creds_env = os.getenv("GOOGLE_CREDENTIALS")
+
+if google_creds_env:
+    # Load from environment variable (Railway / prod)
+    creds_json = base64.b64decode(google_creds_env).decode("utf-8")
+    creds_dict = json.loads(creds_json)
+    creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
+elif os.path.exists("creds.json"):
+    # Load from local file (dev)
+    creds = Credentials.from_service_account_file("creds.json", scopes=scope)
+else:
+    raise RuntimeError("Google credentials not found. Set GOOGLE_CREDENTIALS env variable or provide creds.json")
+
+# Authorize Google Sheets
 client = gspread.authorize(creds)
 spreadsheet = client.open("Resala")
 
@@ -147,7 +160,7 @@ def admin():
     user_spending = {}
     for visit in visits:
         user = visit['User']
-        total = sum(int(visit[p['Name']]) * float(p['Price']) for p in products)
+        total = sum(int(visit.get(p['Name'], 0)) * float(p['Price']) for p in products)
         user_spending[user] = user_spending.get(user, 0) + total
     
     return render_template('admin.html', user_spending=user_spending, products=products)
