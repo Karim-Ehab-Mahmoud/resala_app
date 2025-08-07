@@ -11,7 +11,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'default-key')
 
 # Hardcoded users (replace with database or hashed passwords later)
-USERS = {'karim': '2425', 'admin': 'admin123'}
+USERS = {'karim': '2425', 'admin': 'admin123','yomna': '3030'}
 
 # Google API scopes
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
