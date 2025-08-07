@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>قوافل رسالة</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    .product-card {
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .product-card:hover {
+      transform: scale(1.05);
+    }
+    .search-form {
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="text-primary">قوافل رسالة</h2>
+    <div>
+      {% if is_admin %}
+        <a href="/admin" class="btn btn-outline-dark me-2"><i class="bi bi-bar-chart"></i> لوحة التحكم</a>
+      {% endif %}
+      <a href="/add_family" class="btn btn-outline-success me-2"><i class="bi bi-person-plus"></i> إضافة أسرة</a>
+      <a href="/logout" class="btn btn-outline-danger"><i class="bi bi-box-arrow-right"></i> خروج</a>
+    </div>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <div class="form-check form-switch mb-3">
+    <input class="form-check-input" type="checkbox" id="darkModeToggle">
+    <label class="form-check-label" for="darkModeToggle">تفعيل الوضع الليلي</label>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-md-6 search-form">
+      <form method="post" class="input-group">
+        <input type="hidden" name="search_type" value="name_number">
+        <input type="text" name="search" class="form-control" placeholder="ابحث بالاسم أو رقم الأسرة" required>
+        <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i></button>
+      </form>
+    </div>
+    <div class="col-md-6 search-form">
+      <form method="post" class="input-group">
+        <input type="hidden" name="search_type" value="mobile_id">
+        <input type="text" name="search" class="form-control" placeholder="ابحث برقم الهاتف أو الرقم القومي" required>
+        <button class="btn btn-primary" type="submit"><i class="bi bi-person-vcard"></i></button>
+      </form>
+    </div>
+  </div>
+
+  {% if search_results %}
+  <div class="mt-4">
+    <h4>نتائج البحث</h4>
+    {% for family in search_results %}
+    <div class="alert alert-info">
+      <p><strong>الاسم:</strong> {{ family.Name }}</p>
+      <p><strong>الرقم القومي:</strong> {{ family.NationalID }}</p>
+      <p><strong>الهاتف:</strong> {{ family.MobileNumber }}</p>
+      <p><strong>رقم الأسرة:</strong> {{ family.FamilyNumber }}</p>
+      <a href="/visit/{{ family.FamilyNumber }}" class="btn btn-warning"><i class="bi bi-clipboard-plus"></i> تسجيل زيارة</a>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <h4 class="mt-5">المنتجات المتاحة</h4>
+  <div class="row">
+    {% for product in products %}
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-4">
+        <div class="card text-center product-card">
+          <div class="card-body">
+            <i class="bi bi-box-seam display-6"></i>
+            <h6 class="card-title mt-2">{{ product.Name }}</h6>
+            <p class="text-muted small">{{ product.Price }} EGP</p>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <script>
+    const toggle = document.getElementById('darkModeToggle');
+    const html = document.documentElement;
+
+    toggle.addEventListener('change', function() {
+      html.setAttribute('data-bs-theme', this.checked ? 'dark' : 'light');
+    });
+  </script>
+</body>
+</html>
